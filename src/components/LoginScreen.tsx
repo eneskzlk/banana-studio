@@ -78,6 +78,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ notice = null, onRetry
             <span>{isLoading ? 'Redirecting...' : 'Continue with Google'}</span>
           </button>
 
+          <a href="/generate.html" className="mt-4 block rounded-xl border border-violet-400/30 px-4 py-3 text-center text-sm font-medium text-violet-200 hover:bg-violet-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-300">
+            Galerisiz görsel üret
+          </a>
+
           {error && (
             <div role="alert" className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
               <p className="text-sm text-red-400 text-center">{error}</p>
