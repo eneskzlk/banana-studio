@@ -12,32 +12,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Probe public preview without credentials or paid AI requests
+      - name: Validate page and real API response shapes without paid AI calls
         shell: bash
         env:
           PREVIEW_URL: https://banana-studio-git-hobby-test-eneskzlk.vercel.app
         run: |
           set -euo pipefail
-          probe() {
-            local path="$1"
-            local code
-            code=$(curl --silent --show-error --location --max-time 20 -o /dev/null -w '%{http_code}' "${PREVIEW_URL}${path}")
-            echo "$path -> HTTP $code"
-            if [[ "$code" == "000" || "$code" =~ ^5 ]]; then
-              echo "Runtime or network error"
+          page_status=$(curl --silent --show-error --location --max-time 20 -o /tmp/page -w '%{http_code}' "$PREVIEW_URL/")
+          echo "/ -> HTTP $page_status"
+          test "$page_status" = "200"
+          for path in /api/gemini-generate /api/openai-text-generate /api/youtube /api/gateway-gemini?route=not-a-real-route; do
+            status=$(curl --silent --show-error --location --max-time 20 -D /tmp/api-headers -o /tmp/api-body -w '%{http_code}' "$PREVIEW_URL$path")
+            type=$(grep -i '^content-type:' /tmp/api-headers | tail -n 1 | tr -d '\r' | cut -d ':' -f 2- | xargs)
+            echo "$path -> HTTP $status; content-type: $type"
+            if [[ "$status" == "200" ]] || [[ "$type" != *"application/json"* ]]; then
+              echo "FAIL: API GET unexpectedly returned success or a non-JSON body; could be SPA fallback or login page"
               exit 1
             fi
-            if [[ "$code" == "401" || "$code" == "403" ]]; then
-              echo "Authentication gate detected; cannot verify public runtime"
+            if [[ "$status" =~ ^5 ]]; then
+              echo "FAIL: API GET returned a server error"
               exit 1
             fi
-            if [[ "$code" =~ ^3 ]]; then
-              echo "Unexpected redirect"
-              exit 1
-            fi
-          }
-          probe /
-          probe /api/gemini-generate
-          probe /api/openai-text-generate
-          probe /api/youtube
-          probe /api/gateway-gemini?route=not-a-real-route
+          done
