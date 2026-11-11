@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, requireUser, createUserScopedClient } from './_lib/auth.js';
-import { chooseProvider, providerKey } from './_lib/providerConfiguration.js';
-import { seedanceProviderError, falSeedanceInput, openRouterSeedanceInput } from '../src/lib/video/seedanceProviders.js';
-import { isReferenceUrl } from './_lib/providerMedia.js';
-import { prepareTaskRegistry, registerProviderTask, requireProviderTask } from './_lib/providerTasks.js';
+import { applyCors, requireUser, createUserScopedClient } from '../../api/_lib/auth.js';
+import { chooseProvider, providerKey } from '../../api/_lib/providerConfiguration.js';
+import { seedanceProviderError, falSeedanceInput, openRouterSeedanceInput } from '../../src/lib/video/seedanceProviders.js';
+import { isReferenceUrl } from '../../api/_lib/providerMedia.js';
+import { prepareTaskRegistry, registerProviderTask, requireProviderTask } from '../../api/_lib/providerTasks.js';
 import evolinkGenerate from './evolink-generate.js';
-import { signedMediaUrl } from './_lib/imageStorage.js';
+import { signedMediaUrl } from '../../api/_lib/imageStorage.js';
 
 export const config = { maxDuration: 300 };
 const HANDLE = /^bs_(fal|openrouter)_(seedance-2\.[05])_([a-zA-Z0-9_-]{1,128})$/;

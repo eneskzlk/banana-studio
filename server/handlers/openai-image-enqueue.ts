@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, createServiceRoleClient, createUserScopedClient, requireUser } from './_lib/auth.js';
-import { getOpenAISessionId } from './_lib/openaiGuard.js';
-import { ImageJobInputError, prepareImageJobPayload } from './_lib/imageJobPayload.js';
-import { publishImageJob } from './_lib/imageJobQueue.js';
+import { applyCors, createServiceRoleClient, createUserScopedClient, requireUser } from '../../api/_lib/auth.js';
+import { getOpenAISessionId } from '../../api/_lib/openaiGuard.js';
+import { ImageJobInputError, prepareImageJobPayload } from '../../api/_lib/imageJobPayload.js';
+import { publishImageJob } from '../../api/_lib/imageJobQueue.js';
 
 export const config = { maxDuration: 60 };
 export default async function handler(req: VercelRequest, res: VercelResponse) {

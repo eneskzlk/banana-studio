@@ -14,7 +14,7 @@ const stubs = {
 };
 
 const compiled = await build({
-  entryPoints: ['api/evolink-generate.ts'],
+  entryPoints: ['server/handlers/evolink-generate.ts'],
   absWorkingDir: fileURLToPath(new URL('..', import.meta.url)),
   bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
   plugins: [{ name: 'stubs', setup(b) {

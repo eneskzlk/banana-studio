@@ -1,25 +1,136 @@
 {
   "functions": {
     "api/image-job-worker.ts": {
-      "experimentalTriggers": [{ "type": "queue/v2beta", "topic": "banana-image-jobs", "retryAfterSeconds": 60, "maxDeliveries": 10000 }]
+      "experimentalTriggers": [
+        {
+          "type": "queue/v2beta",
+          "topic": "banana-image-jobs",
+          "retryAfterSeconds": 60,
+          "maxDeliveries": 10000
+        }
+      ]
     }
   },
-
   "headers": [
     {
       "source": "/share.html",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
-        { "key": "Content-Security-Policy", "value": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+        }
       ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Referrer-Policy", "value": "no-referrer" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" }
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/gemini-generate",
+      "destination": "/api/gateway-gemini?route=gemini-generate"
+    },
+    {
+      "source": "/api/gemini-status",
+      "destination": "/api/gateway-gemini?route=gemini-status"
+    },
+    {
+      "source": "/api/openai-text-generate",
+      "destination": "/api/gateway-gemini?route=openai-text-generate"
+    },
+    {
+      "source": "/api/openrouter-text-generate",
+      "destination": "/api/gateway-gemini?route=openrouter-text-generate"
+    },
+    {
+      "source": "/api/fal-image-generate",
+      "destination": "/api/gateway-images?route=fal-image-generate"
+    },
+    {
+      "source": "/api/fal-status",
+      "destination": "/api/gateway-images?route=fal-status"
+    },
+    {
+      "source": "/api/openai-image-enqueue",
+      "destination": "/api/gateway-images?route=openai-image-enqueue"
+    },
+    {
+      "source": "/api/openai-image-generate",
+      "destination": "/api/gateway-images?route=openai-image-generate"
+    },
+    {
+      "source": "/api/openai-image-recover",
+      "destination": "/api/gateway-images?route=openai-image-recover"
+    },
+    {
+      "source": "/api/image-job-sweep",
+      "destination": "/api/gateway-images?route=image-job-sweep"
+    },
+    {
+      "source": "/api/evolink-generate",
+      "destination": "/api/gateway-video?route=evolink-generate"
+    },
+    {
+      "source": "/api/evolink-status",
+      "destination": "/api/gateway-video?route=evolink-status"
+    },
+    {
+      "source": "/api/fal-h3-video",
+      "destination": "/api/gateway-video?route=fal-h3-video"
+    },
+    {
+      "source": "/api/fal-video-scale",
+      "destination": "/api/gateway-video?route=fal-video-scale"
+    },
+    {
+      "source": "/api/seedance-video",
+      "destination": "/api/gateway-video?route=seedance-video"
+    },
+    {
+      "source": "/api/fal-debug",
+      "destination": "/api/gateway-utility?route=fal-debug"
+    },
+    {
+      "source": "/api/folder-share",
+      "destination": "/api/gateway-utility?route=folder-share"
+    },
+    {
+      "source": "/api/provider-usage",
+      "destination": "/api/gateway-utility?route=provider-usage"
+    },
+    {
+      "source": "/api/shared-folder",
+      "destination": "/api/gateway-utility?route=shared-folder"
+    },
+    {
+      "source": "/api/workspace-config",
+      "destination": "/api/gateway-utility?route=workspace-config"
+    },
+    {
+      "source": "/api/youtube",
+      "destination": "/api/gateway-utility?route=youtube"
+    },
+    {
+      "source": "/api/youtube-status",
+      "destination": "/api/gateway-utility?route=youtube-status"
     }
   ]
 }

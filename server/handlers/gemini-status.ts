@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, requireUser } from './_lib/auth.js';
-import { providerAvailability } from './_lib/providerConfiguration.js';
+import { applyCors, requireUser } from '../../api/_lib/auth.js';
+import { providerAvailability } from '../../api/_lib/providerConfiguration.js';
 
 /**
  * Lightweight status endpoint so the client can decide whether to surface

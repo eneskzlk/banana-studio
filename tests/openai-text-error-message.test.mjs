@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { build } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 
-// Real api/openai-text-generate.ts handler. Only auth and the spend ledger are stubbed.
+// Real server/handlers/openai-text-generate.ts handler. Only auth and the spend ledger are stubbed.
 const root = fileURLToPath(new URL('..', import.meta.url));
 const stubs = {
   auth: 'export const applyCors=()=>{};export const requireUser=async()=>({id:"u1"});export const createUserScopedClient=()=>({from:()=>({insert:()=>({abortSignal:async()=>({error:null})})})});',
   openaiGuard: 'export const startOpenAIRequest=async()=>({id:"g1",finish:async()=>{}});export {openAIErrorMessage} from "./api/_lib/openaiError.ts";',
 };
 const stubbed = new RegExp(`/(${Object.keys(stubs).join('|')})\\.js$`);
-const out = await build({ entryPoints: ['api/openai-text-generate.ts'], absWorkingDir: root, bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
+const out = await build({ entryPoints: ['server/handlers/openai-text-generate.ts'], absWorkingDir: root, bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
   plugins: [{ name: 'stubs', setup(b) {
     b.onResolve({ filter: stubbed }, a => ({ path: a.path.match(stubbed)[1], namespace: 'stub' }));
     b.onLoad({ filter: /.*/, namespace: 'stub' }, a => ({ contents: stubs[a.path], loader: 'js', resolveDir: root }));

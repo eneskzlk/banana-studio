@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { OPENROUTER_MODELS } from '../src/lib/providers.js';
-import { applyCors, createUserScopedClient, requireUser } from './_lib/auth.js';
-import { startOpenAIRequest } from './_lib/openaiGuard.js';
-import { createTaskDeadline, waitForTask } from '../src/lib/shared/asyncTask.js';
-import { DEFAULT_OPENROUTER_REASONING, OPENROUTER_TEXT_MODEL, calculateOpenRouterTextCost, isOpenRouterReasoningEffort, openRouterErrorMessage } from '../src/lib/prompts/openrouterText.js';
-import { buildBrainstormOutputFormat, brainstormOutputInstruction, isBrainstormCount, YOUTUBE_ANALYSIS_FORMAT, normalizeBrainstormOutput } from './_lib/textOutputFormats.js';
+import { OPENROUTER_MODELS } from '../../src/lib/providers.js';
+import { applyCors, createUserScopedClient, requireUser } from '../../api/_lib/auth.js';
+import { startOpenAIRequest } from '../../api/_lib/openaiGuard.js';
+import { createTaskDeadline, waitForTask } from '../../src/lib/shared/asyncTask.js';
+import { DEFAULT_OPENROUTER_REASONING, OPENROUTER_TEXT_MODEL, calculateOpenRouterTextCost, isOpenRouterReasoningEffort, openRouterErrorMessage } from '../../src/lib/prompts/openrouterText.js';
+import { buildBrainstormOutputFormat, brainstormOutputInstruction, isBrainstormCount, YOUTUBE_ANALYSIS_FORMAT, normalizeBrainstormOutput } from '../../api/_lib/textOutputFormats.js';
 
 export const config = { maxDuration: 300 };
 const ACTIONS = ['enhance', 'video_enhance', 'brainstorm', 'variation'];

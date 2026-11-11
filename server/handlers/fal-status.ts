@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, requireUser } from './_lib/auth.js';
-import { requireProviderTask } from './_lib/providerTasks.js';
+import { applyCors, requireUser } from '../../api/_lib/auth.js';
+import { requireProviderTask } from '../../api/_lib/providerTasks.js';
 
 const FAL_QUEUE_BASE = 'https://queue.fal.run';
 

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from '@google/genai';
-import { applyCors, requireUser } from './_lib/auth.js';
-import { createTaskDeadline, waitForTask } from '../src/lib/shared/asyncTask.js';
+import { applyCors, requireUser } from '../../api/_lib/auth.js';
+import { createTaskDeadline, waitForTask } from '../../src/lib/shared/asyncTask.js';
 
 interface GeminiGenerateRequest {
   model: string;

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getCloudWorkspaceConfig } from './_lib/workspaceConfig.js';
+import { getCloudWorkspaceConfig } from '../../api/_lib/workspaceConfig.js';
 /** The allowlist is intentional: never spread process.env into a response. */
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store');

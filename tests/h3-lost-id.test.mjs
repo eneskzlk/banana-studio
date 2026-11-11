@@ -17,7 +17,7 @@ const stubs = {
 };
 
 const compiled = await build({
-  entryPoints: ['api/fal-h3-video.ts'],
+  entryPoints: ['server/handlers/fal-h3-video.ts'],
   absWorkingDir: fileURLToPath(new URL('..', import.meta.url)),
   bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
   plugins: [{ name: 'stubs', setup(b) {

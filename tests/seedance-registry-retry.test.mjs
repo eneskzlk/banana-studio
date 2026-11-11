@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { build } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 
-// Real api/seedance-video.ts and real providerTasks.ts over an in-memory provider_tasks table; only auth and the database client are faked.
+// Real server/handlers/seedance-video.ts and real providerTasks.ts over an in-memory provider_tasks table; only auth and the database client are faked.
 const stubs = {
   auth: `export const applyCors=()=>{};export const requireUser=async()=>({id:"u1"});
 export const createServiceRoleClient=()=>({from:()=>({
@@ -13,7 +13,7 @@ export const createServiceRoleClient=()=>({from:()=>({
 export const createUserScopedClient=()=>({from:()=>({select:()=>({eq:(_,provider)=>({eq:(__,id)=>({maybeSingle:async()=>({data:globalThis.__table.rows.find(r=>r.provider===provider&&r.task_id===id&&r.user_id==="u1")||null,error:null})})})})})});`,
 };
 const out = await build({
-  entryPoints: ['api/seedance-video.ts'], absWorkingDir: fileURLToPath(new URL('..', import.meta.url)),
+  entryPoints: ['server/handlers/seedance-video.ts'], absWorkingDir: fileURLToPath(new URL('..', import.meta.url)),
   bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
   plugins: [{ name: 'stubs', setup(b) {
     b.onResolve({ filter: /(^|\/)auth\.js$/ }, () => ({ path: 'auth', namespace: 'stub' }));

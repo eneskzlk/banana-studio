@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { describeEvoLinkFailure } from './_lib/evolink-errors.js';
-import { applyCors, requireUser } from './_lib/auth.js';
-import { prepareTaskRegistry, registerProviderTask } from './_lib/providerTasks.js';
-import { isReferenceUrl } from './_lib/providerMedia.js';
+import { describeEvoLinkFailure } from '../../api/_lib/evolink-errors.js';
+import { applyCors, requireUser } from '../../api/_lib/auth.js';
+import { prepareTaskRegistry, registerProviderTask } from '../../api/_lib/providerTasks.js';
+import { isReferenceUrl } from '../../api/_lib/providerMedia.js';
 
 const EVOLINK_BASE = 'https://api.evolink.ai';
 
