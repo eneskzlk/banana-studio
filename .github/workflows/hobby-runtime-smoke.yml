@@ -1,0 +1,43 @@
+name: Hobby preview runtime smoke
+on:
+  push:
+    branches: [hobby-test]
+    paths:
+      - .github/workflows/hobby-runtime-smoke.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe public preview without credentials or paid AI requests
+        shell: bash
+        env:
+          PREVIEW_URL: https://banana-studio-git-hobby-test-eneskzlk.vercel.app
+        run: |
+          set -euo pipefail
+          probe() {
+            local path="$1"
+            local code
+            code=$(curl --silent --show-error --location --max-time 20 -o /dev/null -w '%{http_code}' "${PREVIEW_URL}${path}")
+            echo "$path -> HTTP $code"
+            if [[ "$code" == "000" || "$code" =~ ^5 ]]; then
+              echo "Runtime or network error"
+              exit 1
+            fi
+            if [[ "$code" == "401" || "$code" == "403" ]]; then
+              echo "Authentication gate detected; cannot verify public runtime"
+              exit 1
+            fi
+            if [[ "$code" =~ ^3 ]]; then
+              echo "Unexpected redirect"
+              exit 1
+            fi
+          }
+          probe /
+          probe /api/gemini-generate
+          probe /api/openai-text-generate
+          probe /api/youtube
+          probe /api/gateway-gemini?route=not-a-real-route
