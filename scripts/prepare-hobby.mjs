@@ -36,7 +36,7 @@ for(const file of fs.readdirSync('tests').filter(f=>f.endsWith('.test.mjs'))){
   const target=path.join('tests',file);
   const before=fs.readFileSync(target,'utf8');
   let after=before.replace(pathPattern,'server/handlers/$1.ts');
-  if(file==='image-error-provider-name.test.mjs')after=after.replaceAll(".includes('/api/')",".includes('/server/handlers/')");
+  if(file==='image-error-provider-name.test.mjs')after=after.replaceAll(".includes('/api/')",".includes('/api/') || a.importer.includes('/server/handlers/')");
   if(before!==after)fs.writeFileSync(target,after);
 }
 const tsPath='api/tsconfig.json';
