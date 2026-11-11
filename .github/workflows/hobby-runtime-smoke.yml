@@ -27,6 +27,8 @@ jobs:
             echo "$path -> HTTP $status; content-type: $type"
             if [[ "$status" == "200" ]] || [[ "$type" != *"application/json"* ]]; then
               echo "FAIL: API GET unexpectedly returned success or a non-JSON body; could be SPA fallback or login page"
+              echo "HTML title (diagnostic): $(grep -oi -m1 -E '<title>[^<]{1,140}</title>' /tmp/api-body | head -n 1 || true)"
+              echo "Response server (diagnostic): $(grep -i '^server:' /tmp/api-headers | tail -1 || true)"
               exit 1
             fi
             if [[ "$status" =~ ^5 ]]; then
