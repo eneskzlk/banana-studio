@@ -25,6 +25,23 @@ for (const name of paths) {
   fs.writeFileSync(to,source);
   fs.unlinkSync(from);
 }
+// Update the internal worker import to its relocated handler.
+const workerRunner='api/_lib/imageJobRunner.ts';
+let workerSource=fs.readFileSync(workerRunner,'utf8');
+workerSource=workerSource.replace("'../openai-image-generate.js'","'../../server/handlers/openai-image-generate.js'");
+fs.writeFileSync(workerRunner,workerSource);
+// Keep source-level tests pointing at the same real handler implementations.
+const pathPattern=new RegExp('api/('+paths.join('|')+')\\.ts','g');
+for(const file of fs.readdirSync('tests').filter(f=>f.endsWith('.test.mjs'))){
+  const target=path.join('tests',file);
+  const before=fs.readFileSync(target,'utf8');
+  const after=before.replace(pathPattern,'server/handlers/$1.ts');
+  if(before!==after)fs.writeFileSync(target,after);
+}
+const tsPath='api/tsconfig.json';
+const ts=JSON.parse(fs.readFileSync(tsPath,'utf8'));
+ts.include=['./**/*.ts','../server/handlers/**/*.ts'];
+fs.writeFileSync(tsPath,JSON.stringify(ts,null,2)+'\n');
 const rewrites=[];
 for(const [group,names] of Object.entries(groups)){
   const imports=names.map((name,i)=>'import route'+i+" from '../server/handlers/"+name+".js';").join('\n');
