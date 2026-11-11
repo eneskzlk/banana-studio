@@ -1,0 +1,34 @@
+name: Banana Studio Hobby preflight
+on:
+  push:
+    branches: [hobby-test]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Unit tests
+        run: npm test
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: List Vercel API entries
+        run: |
+          find api -maxdepth 1 -name '*.ts' -type f | sort
+          count=$(find api -maxdepth 1 -name '*.ts' -type f | wc -l)
+          echo "Top-level API entrypoints: $count"
+          if [ "$count" -gt 12 ]; then
+            echo "Hobby 12-function limit exceeded"
+            exit 1
+          fi

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { build } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 
-// Real api/evolink-generate.ts and api/evolink-status.ts and real providerTasks.ts over an in-memory provider_tasks table; only auth and the database client are faked.
+// Real server/handlers/evolink-generate.ts and server/handlers/evolink-status.ts and real providerTasks.ts over an in-memory provider_tasks table; only auth and the database client are faked.
 const stubs = {
   auth: `export const applyCors=()=>{};export const requireUser=async()=>({id:"u1"});
 export const createServiceRoleClient=()=>({from:()=>({
@@ -24,8 +24,8 @@ const load = async entry => {
   });
   return (await import('data:text/javascript;base64,' + Buffer.from(out.outputFiles[0].text).toString('base64'))).default;
 };
-const post = await load('api/evolink-generate.ts');
-const poll = await load('api/evolink-status.ts');
+const post = await load('server/handlers/evolink-generate.ts');
+const poll = await load('server/handlers/evolink-status.ts');
 
 const response = () => { const res = { statusCode: 0, status(c) { res.statusCode = c; return res; }, json(b) { res.body = b; return res; }, end() { return res; }, setHeader() {} }; return res; };
 const reply = body => ({ ok: true, status: 200, json: async () => body, text: async () => JSON.stringify(body) });

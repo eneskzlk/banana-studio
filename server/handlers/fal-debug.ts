@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, requireAdmin } from './_lib/auth.js';
+import { applyCors, requireAdmin } from '../../api/_lib/auth.js';
 
 /**
  * One-shot diagnostic endpoint for verifying that the FAL_KEY configured on

@@ -15,7 +15,7 @@ const stubs = {
 };
 
 const out = await build({
-  entryPoints: ['api/fal-image-generate.ts'],
+  entryPoints: ['server/handlers/fal-image-generate.ts'],
   absWorkingDir: fileURLToPath(new URL('..', import.meta.url)),
   bundle: true,
   write: false,

@@ -22,8 +22,8 @@ const load = async entry => {
   });
   return (await import('data:text/javascript;base64,' + Buffer.from(out.outputFiles[0].text).toString('base64'))).default;
 };
-const scale = await load('api/fal-video-scale.ts');
-const h3 = await load('api/fal-h3-video.ts');
+const scale = await load('server/handlers/fal-video-scale.ts');
+const h3 = await load('server/handlers/fal-h3-video.ts');
 
 const poll = async (handler, query, responses) => {
   const oldFetch = globalThis.fetch, oldKey = process.env.FAL_KEY, queue = [...responses], urls = [];

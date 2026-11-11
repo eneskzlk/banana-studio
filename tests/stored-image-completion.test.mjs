@@ -11,7 +11,7 @@ const stubs = {
   imageProviders: `export const imageProviderModel=()=>"m";export const requestImage=async()=>new Response(JSON.stringify({data:[{b64_json:"${Buffer.from(png, 'hex').toString('base64')}"}],usage:{input_tokens_details:{text_tokens:1,image_tokens:0},output_tokens:1}}),{status:200});`,
 };
 // A relative entry with absWorkingDir: an absolute Windows entry (D:\\...) would match the package filter below.
-const out = await build({ entryPoints: ['api/openai-image-generate.ts'], absWorkingDir: fileURLToPath(new URL('..', import.meta.url)), bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
+const out = await build({ entryPoints: ['server/handlers/openai-image-generate.ts'], absWorkingDir: fileURLToPath(new URL('..', import.meta.url)), bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
   plugins: [{ name: 'stubs', setup(b) {
     b.onResolve({ filter: /_lib\/(auth|providerMedia|imageProviders)\.js$/ }, args => ({ path: args.path.match(/(auth|providerMedia|imageProviders)\.js$/)[1], namespace: 'stub' }));
     b.onLoad({ filter: /.*/, namespace: 'stub' }, args => ({ contents: stubs[args.path], loader: 'js' }));

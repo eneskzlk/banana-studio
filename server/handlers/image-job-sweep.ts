@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { VercelRequest,VercelResponse } from '@vercel/node';
-import { createServiceRoleClient } from './_lib/auth.js';
-import { publishImageJob, type ImageJobMessage } from './_lib/imageJobQueue.js';
+import { createServiceRoleClient } from '../../api/_lib/auth.js';
+import { publishImageJob, type ImageJobMessage } from '../../api/_lib/imageJobQueue.js';
 
 export const config={maxDuration:60};
 export default async function handler(req:VercelRequest,res:VercelResponse){

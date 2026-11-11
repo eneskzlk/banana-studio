@@ -16,7 +16,7 @@ const stubs = {
   imageStorage: 'export const signedMediaUrl=async()=>"https://signed";',
 };
 const compiled = await build({
-  entryPoints: ['api/seedance-video.ts'],
+  entryPoints: ['server/handlers/seedance-video.ts'],
   absWorkingDir: fileURLToPath(new URL('..', import.meta.url)),
   bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
   plugins: [{ name: 'stubs', setup(b) {

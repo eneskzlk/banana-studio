@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, createServiceRoleClient, requireAdmin } from './_lib/auth.js';
-import { H3_MAX_ENDPOINTS } from '../src/lib/video/h3Max.js';
-import { reconcileH3Usage } from './_lib/h3Usage.js';
+import { applyCors, createServiceRoleClient, requireAdmin } from '../../api/_lib/auth.js';
+import { H3_MAX_ENDPOINTS } from '../../src/lib/video/h3Max.js';
+import { reconcileH3Usage } from '../../api/_lib/h3Usage.js';
 
 const EVOLINK_BASE = 'https://api.evolink.ai';
 const FAL_PLATFORM_BASE = 'https://api.fal.ai';

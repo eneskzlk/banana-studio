@@ -9,7 +9,7 @@ const stubs = {
   'providerTasks.js': 'export const requireProviderTask=async()=>true;',
 };
 const compiled = await build({
-  entryPoints: ['api/fal-status.ts'], absWorkingDir: fileURLToPath(new URL('..', import.meta.url)),
+  entryPoints: ['server/handlers/fal-status.ts'], absWorkingDir: fileURLToPath(new URL('..', import.meta.url)),
   bundle: true, write: false, format: 'esm', platform: 'node',
   plugins: [{ name: 'stubs', setup(b) {
     b.onResolve({ filter: /_lib\/(auth|providerTasks)\.js$/ }, args => ({ path: args.path.split('/').pop(), namespace: 'stub' }));

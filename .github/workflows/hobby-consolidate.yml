@@ -1,0 +1,49 @@
+name: Consolidate Banana Studio Hobby branch
+on:
+  push:
+    branches: [hobby-test]
+    paths:
+      - scripts/prepare-hobby.mjs
+      - .github/workflows/hobby-consolidate.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: hobby-test
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check isolated branch
+        run: |
+          test "$(git branch --show-current)" = "hobby-test"
+          test -f api/gemini-generate.ts
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Generate compact API routes
+        run: node scripts/prepare-hobby.mjs
+      - name: Unit tests
+        run: npm test
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build web app
+        run: npm run build
+      - name: Check API function count
+        run: |
+          count=$(find api -maxdepth 1 -type f -name '*.ts' | wc -l)
+          echo "Serverless entrypoints: $count"
+          test "$count" -le 12
+      - name: Publish tested changes to hobby-test only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A api/ server/handlers/ tests/ scripts/buildSecurity.ts .vercelignore vercel.json
+          git diff --cached --quiet && exit 0
+          git commit -m "build: consolidate Hobby API endpoints after successful tests"
+          git push origin HEAD:hobby-test

@@ -1,20 +1,20 @@
-import { chooseProvider, providerKey } from './_lib/providerConfiguration.js';
-import { PROVIDER_LABELS, type AIProvider } from '../src/lib/providers.js';
-import { imageProviderModel, requestImage } from './_lib/imageProviders.js';
-import { isReferenceUrl, providerImageUrl } from './_lib/providerMedia.js';
-import { getPersonId, cleanPersonName } from '../src/lib/references/personReferences.js';
-import { normalizePromptPreparation } from '../src/lib/prompts/promptPreparation.js';
-import { normalizeYouTubeSource } from '../src/lib/youtube/youtubeSource.js';
+import { chooseProvider, providerKey } from '../../api/_lib/providerConfiguration.js';
+import { PROVIDER_LABELS, type AIProvider } from '../../src/lib/providers.js';
+import { imageProviderModel, requestImage } from '../../api/_lib/imageProviders.js';
+import { isReferenceUrl, providerImageUrl } from '../../api/_lib/providerMedia.js';
+import { getPersonId, cleanPersonName } from '../../src/lib/references/personReferences.js';
+import { normalizePromptPreparation } from '../../src/lib/prompts/promptPreparation.js';
+import { normalizeYouTubeSource } from '../../src/lib/youtube/youtubeSource.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, createUserScopedClient, requireUser, type AuthenticatedUser } from './_lib/auth.js';
-import { calculateOpenAIImageCost, getOpenAIImageOptions, getOpenAIImageSize, SUNBURST_MODEL, validateOpenAIImageOptions, validateOpenAIImageSize } from '../src/lib/images/openaiImage.js';
-import { prepareSunburstGeneration, getSunburstEditIntent } from '../src/lib/images/imagePrompting.js';
-import { EDIT_REGION_REQUIRED, isValidEditRegion, copyEditRegion, describeEditRegion } from '../src/lib/images/imageEditRegion.js';
-import { readEditSource, compositeProtectedEdit } from './_lib/protectedImageEdit.js';
-import { readImageDimensions } from './_lib/imageDimensions.js';
-import { saveGeneratedImage, readStoredImage, imageSha256, signedMediaUrl, canonicalMediaUrl } from './_lib/imageStorage.js';
-import { startOpenAIRequest } from './_lib/openaiGuard.js';
-import { openAIErrorMessage, safeOpenAIErrorCode, imageRateLimitDelay } from './_lib/openaiError.js';
+import { applyCors, createUserScopedClient, requireUser, type AuthenticatedUser } from '../../api/_lib/auth.js';
+import { calculateOpenAIImageCost, getOpenAIImageOptions, getOpenAIImageSize, SUNBURST_MODEL, validateOpenAIImageOptions, validateOpenAIImageSize } from '../../src/lib/images/openaiImage.js';
+import { prepareSunburstGeneration, getSunburstEditIntent } from '../../src/lib/images/imagePrompting.js';
+import { EDIT_REGION_REQUIRED, isValidEditRegion, copyEditRegion, describeEditRegion } from '../../src/lib/images/imageEditRegion.js';
+import { readEditSource, compositeProtectedEdit } from '../../api/_lib/protectedImageEdit.js';
+import { readImageDimensions } from '../../api/_lib/imageDimensions.js';
+import { saveGeneratedImage, readStoredImage, imageSha256, signedMediaUrl, canonicalMediaUrl } from '../../api/_lib/imageStorage.js';
+import { startOpenAIRequest } from '../../api/_lib/openaiGuard.js';
+import { openAIErrorMessage, safeOpenAIErrorCode, imageRateLimitDelay } from '../../api/_lib/openaiError.js';
 
 // Match the existing deployment's 300-second function budget. No automatic
 // retry of a billable request; the saved row can be recovered after a reload.

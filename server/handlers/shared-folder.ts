@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createHash } from 'node:crypto';
-import { createServiceRoleClient } from './_lib/auth.js';
+import { createServiceRoleClient } from '../../api/_lib/auth.js';
 
 const URL_LIFETIME_SECONDS = 60;
 const PAGE_SIZE = 48;

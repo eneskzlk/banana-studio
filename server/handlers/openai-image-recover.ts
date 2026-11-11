@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, createUserScopedClient, requireUser } from './_lib/auth.js';
-import { readStoredImage, signedMediaUrl } from './_lib/imageStorage.js';
-import { RECOVERABLE_IMAGE_MODELS } from '../src/lib/images/openaiImage.js';
+import { applyCors, createUserScopedClient, requireUser } from '../../api/_lib/auth.js';
+import { readStoredImage, signedMediaUrl } from '../../api/_lib/imageStorage.js';
+import { RECOVERABLE_IMAGE_MODELS } from '../../src/lib/images/openaiImage.js';
 
 export const config = { maxDuration: 60 };
 

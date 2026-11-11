@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, requireUser } from './_lib/auth.js';
-import { prepareTaskRegistry, registerProviderTask } from './_lib/providerTasks.js';
-import { getNanoBanana21InputError, NANO_BANANA_21_ENDPOINT } from '../src/lib/images/nanoBanana21.js';
+import { applyCors, requireUser } from '../../api/_lib/auth.js';
+import { prepareTaskRegistry, registerProviderTask } from '../../api/_lib/providerTasks.js';
+import { getNanoBanana21InputError, NANO_BANANA_21_ENDPOINT } from '../../src/lib/images/nanoBanana21.js';
 
 const FAL_QUEUE_BASE = 'https://queue.fal.run';
 

@@ -9,7 +9,7 @@ const stubs = {
     export const createUserScopedClient=()=>({from:()=>{const q={select:()=>q,eq:()=>q,maybeSingle:async()=>({data:globalThis.__row,error:null}),update:()=>q,then:(ok,fail)=>Promise.resolve({error:null}).then(ok,fail)};return q;},storage:{from:()=>({})}});`,
   'imageStorage.js': `export const readStoredImage=async(_storage,path)=>path.endsWith('.png')?{size:'1024x1024',bytes:2048}:null;export const signedMediaUrl=async(_storage,path)=>'https://media.example/'+path;`,
 };
-const compiled = await build({entryPoints:['api/openai-image-recover.ts'],absWorkingDir:fileURLToPath(new URL('..',import.meta.url)),bundle:true,write:false,format:'esm',platform:'node',
+const compiled = await build({entryPoints:['server/handlers/openai-image-recover.ts'],absWorkingDir:fileURLToPath(new URL('..',import.meta.url)),bundle:true,write:false,format:'esm',platform:'node',
   plugins:[{name:'stubs',setup(b){
     b.onResolve({filter:/_lib\/(auth|imageStorage)\.js$/},args=>({path:args.path.split('/').pop(),namespace:'stub'}));
     b.onLoad({filter:/.*/,namespace:'stub'},args=>({contents:stubs[args.path],loader:'js'}));

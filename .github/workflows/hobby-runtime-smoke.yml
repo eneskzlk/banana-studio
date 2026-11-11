@@ -1,0 +1,38 @@
+name: Hobby preview runtime smoke
+on:
+  push:
+    branches: [hobby-test]
+    paths:
+      - .github/workflows/hobby-runtime-smoke.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate page and real API response shapes without paid AI calls
+        shell: bash
+        env:
+          PREVIEW_URL: https://banana-studio-git-hobby-test-eneskzlk.vercel.app
+        run: |
+          set -euo pipefail
+          page_status=$(curl --silent --show-error --location --max-time 20 -o /tmp/page -w '%{http_code}' "$PREVIEW_URL/")
+          echo "/ -> HTTP $page_status"
+          test "$page_status" = "200"
+          for path in /api/gemini-generate /api/openai-text-generate /api/youtube /api/gateway-gemini?route=not-a-real-route; do
+            status=$(curl --silent --show-error --location --max-time 20 -D /tmp/api-headers -o /tmp/api-body -w '%{http_code}' "$PREVIEW_URL$path")
+            type=$(grep -i '^content-type:' /tmp/api-headers | tail -n 1 | tr -d '\r' | cut -d ':' -f 2- | xargs)
+            echo "$path -> HTTP $status; content-type: $type"
+            if [[ "$status" == "200" ]] || [[ "$type" != *"application/json"* ]]; then
+              echo "FAIL: API GET unexpectedly returned success or a non-JSON body; could be SPA fallback or login page"
+              echo "HTML title (diagnostic): $(grep -oi -m1 -E '<title>[^<]{1,140}</title>' /tmp/api-body | head -n 1 || true)"
+              echo "Response server (diagnostic): $(grep -i '^server:' /tmp/api-headers | tail -1 || true)"
+              exit 1
+            fi
+            if [[ "$status" =~ ^5 ]]; then
+              echo "FAIL: API GET returned a server error"
+              exit 1
+            fi
+          done
