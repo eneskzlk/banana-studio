@@ -43,7 +43,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A api/ server/handlers/ scripts/buildSecurity.ts .vercelignore vercel.json
+          git add -A api/ server/handlers/ tests/ scripts/buildSecurity.ts .vercelignore vercel.json
           git diff --cached --quiet && exit 0
           git commit -m "build: consolidate Hobby API endpoints after successful tests"
           git push origin HEAD:hobby-test
