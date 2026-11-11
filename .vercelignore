@@ -13,7 +13,9 @@ __pycache__/
 *.p12
 *.pfx
 
-desktop/
+desktop/macos/
+desktop/windows/
+desktop/server/
 .build/
 .local-data/
 .local-runtime/
