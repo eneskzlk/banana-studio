@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
-import { AutoProcessor, BaseStreamer, env, MultiModalityCausalLM } from '@huggingface/transformers';
-import type { ImageWorkerMessage } from './messages';
+import { AutoProcessor, BaseStreamer, env, MultiModalityCausalLM, RawImage } from '@huggingface/transformers';
+import type { CoverWorkerMessage, ImageWorkerMessage } from './messages';
 
 const worker = self as unknown as DedicatedWorkerGlobalScope;
 const modelId = 'onnx-community/Janus-Pro-1B-ONNX';
@@ -11,7 +11,7 @@ env.allowLocalModels = false;
 // Vite emits the runtime packaged with Transformers.js alongside the worker.
 env.backends.onnx.wasm.wasmPaths = undefined;
 
-const report = (message: ImageWorkerMessage) => worker.postMessage(message);
+const report = (message: ImageWorkerMessage | CoverWorkerMessage) => worker.postMessage(message);
 
 async function loadModel() {
   const navigator = worker.navigator as WorkerNavigator & {
@@ -74,15 +74,38 @@ class ImageProgress extends BaseStreamer {
   end() {}
 }
 
-worker.addEventListener('message', async ({ data: prompt }: MessageEvent<string>) => {
-  if (generating || typeof prompt !== 'string' || !prompt.trim()) return;
+async function chooseCover(montage: Blob, loaded: Awaited<ReturnType<typeof loadModel>>) {
+  const { processor, model } = loaded;
+  report({ type: 'analyzing' });
+  const image = await RawImage.fromBlob(montage);
+  const prompt = '<image_placeholder>\nThe four numbered pictures are frames from the same video. Which frame best represents the main subject or action and makes a clear, compelling video thumbnail? Avoid text screens and transitions. Use this exact format: Number: short factual description.';
+  const inputs = await processor([{ role: '<|User|>', content: prompt, images: [image] }]);
+  const output = await model.generate({ ...inputs, max_new_tokens: 35, do_sample: false });
+  if (!('slice' in output) || typeof output.slice !== 'function') throw new Error('Model yanıtı okunamadı.');
+  const tokens = output.slice(null, [inputs.input_ids.dims.at(-1), null]);
+  const answer = processor.batch_decode(tokens, { skip_special_tokens: true })[0]?.trim() ?? '';
+  const choice = answer.match(/^(?:(?:frame|image|number)\s*)?[#*\s]*([1-4])\b\s*[:.)–-]?\s*(.*)/i);
+  if (!choice) throw new Error('Model bir kare seçemedi.');
+  report({ type: 'selection', index: Number(choice[1]) - 1, description: choice[2].trim().slice(0, 200) });
+}
+
+worker.addEventListener('message', async ({ data }: MessageEvent<string | { montage: Blob }>) => {
+  if (generating) return;
+  const prompt = typeof data === 'string' ? data.trim() : '';
+  const montage = typeof data === 'object' ? data?.montage : undefined;
+  if (!prompt && !(montage instanceof Blob)) return;
   generating = true;
   try {
     if (!modelPromise) {
       report({ type: 'loading' });
       modelPromise = loadModel();
     }
-    const { processor, model, tokenCount } = await modelPromise;
+    const loaded = await modelPromise;
+    if (montage) {
+      await chooseCover(montage, loaded);
+      return;
+    }
+    const { processor, model, tokenCount } = loaded;
     report({ type: 'generating', percent: 0 });
     const inputs = await processor([{ role: '<|User|>', content: prompt }], { chat_template: 'text_to_image' });
     const images = await model.generate_images({
