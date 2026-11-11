@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => {
         app: path.resolve(__dirname, 'index.html'),
         share: path.resolve(__dirname, 'share.html'),
         generate: path.resolve(__dirname, 'generate.html'),
+        jarvisImage: path.resolve(__dirname, 'jarvis-image.html'),
       },
     },
   },
