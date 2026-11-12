@@ -2,6 +2,8 @@ export type ImageWorkerMessage =
   | { type: 'loading' }
   | { type: 'generating'; percent: number }
   | { type: 'result'; image: Blob }
+  | { type: 'variant-progress'; index: number; percent: number }
+  | { type: 'variants'; images: Array<{ index: number; image: Blob }> }
   | { type: 'error'; message: string };
 
 export type CoverWorkerMessage =

@@ -60,14 +60,14 @@ let generating = false;
 class ImageProgress extends BaseStreamer {
   private tokens = -1;
 
-  constructor(private readonly total: number) {
+  constructor(private readonly total: number, private readonly progress: (percent: number) => void) {
     super();
   }
 
   put() {
     this.tokens += 1;
     if (this.tokens % 8 === 0) {
-      report({ type: 'generating', percent: Math.min(99, Math.floor(this.tokens * 100 / this.total)) });
+      this.progress(Math.min(99, Math.floor(this.tokens * 100 / this.total)));
     }
   }
 
@@ -78,13 +78,13 @@ async function chooseCover(montage: Blob, loaded: Awaited<ReturnType<typeof load
   const { processor, model } = loaded;
   report({ type: 'analyzing' });
   const image = await RawImage.fromBlob(montage);
-  const prompt = '<image_placeholder>\nThe four numbered pictures are frames from the same video. Which frame best represents the main subject or action and makes a clear, compelling video thumbnail? Avoid text screens and transitions. Use this exact format: Number: short factual description.';
+  const prompt = '<image_placeholder>\nFour frames from one video. Choose the strongest thumbnail frame that shows the main person, product, or action clearly. Avoid transitions, side details, hands alone when a face or main product is shown, and subtitle-heavy frames. Describe the main subject, action, and real setting using visible details. Start with the frame number followed by a colon.';
   const inputs = await processor([{ role: '<|User|>', content: prompt, images: [image] }]);
-  const output = await model.generate({ ...inputs, max_new_tokens: 35, do_sample: false });
+  const output = await model.generate({ ...inputs, max_new_tokens: 55, do_sample: false });
   if (!('slice' in output) || typeof output.slice !== 'function') throw new Error('Model yanıtı okunamadı.');
   const tokens = output.slice(null, [inputs.input_ids.dims.at(-1), null]);
   const answer = processor.batch_decode(tokens, { skip_special_tokens: true })[0]?.trim() ?? '';
-  const choice = answer.match(/^(?:(?:frame|image|number)\s*)?[#*\s]*([1-4])\b\s*[:.)–-]?\s*(.*)/i);
+  const choice = answer.match(/^(?:the best (?:frame|image) is\s*)?(?:(?:frame|image|number)\s*)?[#*\s]*([1-4])\b\s*[:.)–-]?\s*([\s\S]*)/i);
   if (!choice) throw new Error('Model bir kare seçemedi.');
   report({ type: 'selection', index: Number(choice[1]) - 1, description: choice[2].trim().slice(0, 200) });
 }
@@ -113,12 +113,28 @@ async function cutOutFrames(frames: Blob[]) {
   report({ type: 'cutouts', images });
 }
 
-worker.addEventListener('message', async ({ data }: MessageEvent<string | { montage: Blob } | { frames: Blob[] }>) => {
+async function renderImage(prompt: string, loaded: Awaited<ReturnType<typeof loadModel>>, progress: (percent: number) => void) {
+  const { processor, model, tokenCount } = loaded;
+  progress(0);
+  const inputs = await processor([{ role: '<|User|>', content: prompt }], { chat_template: 'text_to_image' });
+  const images = await model.generate_images({
+    ...inputs,
+    min_new_tokens: tokenCount,
+    max_new_tokens: tokenCount,
+    do_sample: true,
+    streamer: new ImageProgress(tokenCount, progress),
+  });
+  if (!images[0]) throw new Error('Model görsel üretemedi.');
+  return images[0].toBlob('image/png');
+}
+
+worker.addEventListener('message', async ({ data }: MessageEvent<string | { prompts: string[] } | { montage: Blob } | { frames: Blob[] }>) => {
   if (generating) return;
   const prompt = typeof data === 'string' ? data.trim() : '';
   const montage = typeof data === 'object' && data && 'montage' in data ? data.montage : undefined;
   const frames = typeof data === 'object' && data && 'frames' in data ? data.frames : undefined;
-  if (!prompt && !(montage instanceof Blob) && !frames?.length) return;
+  const prompts = typeof data === 'object' && data && 'prompts' in data ? data.prompts : undefined;
+  if (!prompt && !(montage instanceof Blob) && !frames?.length && !prompts?.length) return;
   generating = true;
   try {
     if (frames?.length) {
@@ -134,18 +150,20 @@ worker.addEventListener('message', async ({ data }: MessageEvent<string | { mont
       await chooseCover(montage, loaded);
       return;
     }
-    const { processor, model, tokenCount } = loaded;
-    report({ type: 'generating', percent: 0 });
-    const inputs = await processor([{ role: '<|User|>', content: prompt }], { chat_template: 'text_to_image' });
-    const images = await model.generate_images({
-      ...inputs,
-      min_new_tokens: tokenCount,
-      max_new_tokens: tokenCount,
-      do_sample: true,
-      streamer: new ImageProgress(tokenCount),
-    });
-    if (!images[0]) throw new Error('Model görsel üretemedi.');
-    report({ type: 'result', image: await images[0].toBlob('image/png') });
+    if (prompts) {
+      const images: Array<{ index: number; image: Blob }> = [];
+      for (const [index, variant] of prompts.entries()) {
+        try {
+          const image = await renderImage(variant, loaded, percent => report({ type: 'variant-progress', index, percent }));
+          images.push({ index, image });
+        } catch (error) {
+          if (index === prompts.length - 1 && !images.length) throw error;
+        }
+      }
+      report({ type: 'variants', images });
+      return;
+    }
+    report({ type: 'result', image: await renderImage(prompt, loaded, percent => report({ type: 'generating', percent })) });
   } catch (error) {
     report({ type: 'error', message: error instanceof Error ? error.message : String(error) });
   } finally {
