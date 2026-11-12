@@ -3,8 +3,8 @@ import { env, pipeline, type TextGenerationPipeline } from '@huggingface/transfo
 
 type Message = { role: 'system' | 'user' | 'assistant'; content: string };
 const worker = self as unknown as DedicatedWorkerGlobalScope;
-const model = 'onnx-community/Qwen2.5-0.5B-Instruct';
-const revision = '516c8d04add8a80c5228f32102b57953b8d421a9';
+const model = 'onnx-community/Qwen3-0.6B-ONNX';
+const revision = '79346d370dfae34801d26993fda9ae2372900fd0';
 
 env.allowLocalModels = false;
 env.backends.onnx.wasm.wasmPaths = undefined;
@@ -40,14 +40,19 @@ worker.addEventListener('message', async ({ data: messages }: MessageEvent<Messa
     }
     const generate = await ready;
     worker.postMessage({ type: 'chat-generating' });
-    const output = await generate(messages, {
+    const template = { tokenize: false, add_generation_prompt: true, enable_thinking: false };
+    const prompt = generate.tokenizer.apply_chat_template(messages, template);
+    if (typeof prompt !== 'string') throw new Error('Sohbet girdisi hazırlanamadı.');
+    const output = await generate(prompt, {
       max_new_tokens: 300,
       do_sample: false,
       return_full_text: false,
+      add_special_tokens: false,
     });
     const first = output[0];
-    const generated = Array.isArray(first) ? undefined : first?.generated_text;
-    const text = Array.isArray(generated) ? generated.at(-1)?.content.trim() : generated?.trim();
+    const text = !Array.isArray(first) && typeof first?.generated_text === 'string'
+      ? first.generated_text.trim()
+      : '';
     if (!text) throw new Error('Yerel model boş yanıt verdi.');
     worker.postMessage({ type: 'chat-result', text: text.slice(0, 8000) });
   } catch {
