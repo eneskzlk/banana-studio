@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
-import { AutoProcessor, BaseStreamer, env, MultiModalityCausalLM, RawImage } from '@huggingface/transformers';
-import type { CoverWorkerMessage, ImageWorkerMessage } from './messages';
+import { AutoProcessor, BaseStreamer, env, MultiModalityCausalLM, pipeline, RawImage } from '@huggingface/transformers';
+import type { CoverWorkerMessage, CutoutWorkerMessage, ImageWorkerMessage } from './messages';
 
 const worker = self as unknown as DedicatedWorkerGlobalScope;
 const modelId = 'onnx-community/Janus-Pro-1B-ONNX';
@@ -11,7 +11,7 @@ env.allowLocalModels = false;
 // Vite emits the runtime packaged with Transformers.js alongside the worker.
 env.backends.onnx.wasm.wasmPaths = undefined;
 
-const report = (message: ImageWorkerMessage | CoverWorkerMessage) => worker.postMessage(message);
+const report = (message: ImageWorkerMessage | CoverWorkerMessage | CutoutWorkerMessage) => worker.postMessage(message);
 
 async function loadModel() {
   const navigator = worker.navigator as WorkerNavigator & {
@@ -89,13 +89,42 @@ async function chooseCover(montage: Blob, loaded: Awaited<ReturnType<typeof load
   report({ type: 'selection', index: Number(choice[1]) - 1, description: choice[2].trim().slice(0, 200) });
 }
 
-worker.addEventListener('message', async ({ data }: MessageEvent<string | { montage: Blob }>) => {
+async function cutOutFrames(frames: Blob[]) {
+  report({ type: 'cutting' });
+  const model = 'wonfy/BiRefNet_lite-ONNX-webgpu';
+  const revision = 'c40eaa22fb1af9edcf75c7b79d25ed8a8e901140';
+  async function run(device: 'webgpu' | 'wasm') {
+    const segmenter = await pipeline('background-removal', model, {
+      device, revision, dtype: device === 'webgpu' ? 'fp16' : 'fp32',
+    });
+    try {
+      const images: Blob[] = [];
+      for (const frame of frames) {
+        const [image] = await segmenter(await RawImage.fromBlob(frame));
+        if (!image || image.channels !== 4) throw new Error('Ön plan maskesi oluşturulamadı.');
+        images.push(await image.toBlob('image/png'));
+      }
+      return images;
+    } finally {
+      await segmenter.dispose();
+    }
+  }
+  const images = await run('webgpu').catch(() => run('wasm'));
+  report({ type: 'cutouts', images });
+}
+
+worker.addEventListener('message', async ({ data }: MessageEvent<string | { montage: Blob } | { frames: Blob[] }>) => {
   if (generating) return;
   const prompt = typeof data === 'string' ? data.trim() : '';
-  const montage = typeof data === 'object' ? data?.montage : undefined;
-  if (!prompt && !(montage instanceof Blob)) return;
+  const montage = typeof data === 'object' && data && 'montage' in data ? data.montage : undefined;
+  const frames = typeof data === 'object' && data && 'frames' in data ? data.frames : undefined;
+  if (!prompt && !(montage instanceof Blob) && !frames?.length) return;
   generating = true;
   try {
+    if (frames?.length) {
+      await cutOutFrames(frames);
+      return;
+    }
     if (!modelPromise) {
       report({ type: 'loading' });
       modelPromise = loadModel();

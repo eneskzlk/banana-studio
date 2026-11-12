@@ -9,3 +9,8 @@ export type CoverWorkerMessage =
   | { type: 'analyzing' }
   | { type: 'selection'; index: number; description: string }
   | { type: 'error'; message: string };
+
+export type CutoutWorkerMessage =
+  | { type: 'cutting' }
+  | { type: 'cutouts'; images: Blob[] }
+  | { type: 'error'; message: string };
